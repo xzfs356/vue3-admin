@@ -54,19 +54,6 @@ export const asyncRoutes: RouteRecordRaw[] = [
       meta:{title:'角色管理',icon:'Lock',roles:['admin']}
     }]
   },
-  // {
-  //   path: '/role',
-  //   component: () => import('@/layout/index.vue'),
-  //   children: [
-  //     {
-  //       path: '',
-  //       name: 'Role',
-  //       component: () => import('@/views/role/index.vue'),
-  //       meta: { title: '角色管理', icon: 'Lock', roles: ['admin'] },
-  //     },
-  //   ],
-  // },
-  // 放在最后，匹配所有未知路由跳转 404
   {
     path: '/:pathMatch(.*)*',
     redirect: '/404',
