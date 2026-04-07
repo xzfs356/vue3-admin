@@ -6,12 +6,7 @@
         <p>请登录您的账号</p>
       </div>
 
-      <el-form
-        ref="formRef"
-        :model="loginForm"
-        :rules="rules"
-        size="large"
-      >
+      <el-form ref="formRef" :model="loginForm" :rules="rules" size="large">
         <el-form-item prop="username">
           <el-input
             v-model="loginForm.username"
@@ -38,12 +33,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button
-            type="primary"
-            style="width: 100%"
-            :loading="loading"
-            @click="handleLogin"
-          >
+          <el-button type="primary" style="width: 100%" :loading="loading" @click="handleLogin">
             登 录
           </el-button>
         </el-form-item>
