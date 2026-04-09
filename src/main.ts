@@ -8,6 +8,7 @@ import './style.css'
 import App from './App.vue'
 import router from './router'
 import '@/router/guard'
+import loadingDirective from '@/directives/loading'
 
 const app = createApp(App)
 
@@ -20,4 +21,5 @@ app.use(createPinia())
 app.use(router)
 app.use(ElementPlus, { locale: zhCn })
 
+app.directive('loading', loadingDirective)
 app.mount('#app')

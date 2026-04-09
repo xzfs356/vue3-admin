@@ -1,23 +1,19 @@
 <template>
   <div class="user-page">
-    <!-- 搜索栏 -->
     <div class="search-bar">
       <el-input
-        v-model="searchKeyword"
+        v-model="searchParams.keyword"
         placeholder="搜索用户名"
         clearable
         style="width: 220px"
         prefix-icon="Search"
-        @input="handleSearch"
+        @change="search"
       />
-      <el-button type="primary" icon="Plus" @click="openDialog()">
-        新增用户
-      </el-button>
+      <el-button type="primary" icon="Plus" @click="openDialog()"> 新增用户 </el-button>
     </div>
 
-    <!-- 表格 -->
-    <div class="table-card">
-      <el-table :data="userList" v-loading="loading" stripe>
+    <div class="table-card" v-loading="loading">
+      <el-table :data="list" stripe>
         <el-table-column prop="id" label="ID" width="60" />
         <el-table-column prop="username" label="用户名" />
         <el-table-column prop="email" label="邮箱" />
@@ -32,52 +28,33 @@
         <el-table-column prop="createTime" label="创建时间" width="180" />
         <el-table-column label="操作" width="160">
           <template #default="{ row }">
-            <el-button
-              type="primary"
-              link
-              icon="Edit"
-              @click="openDialog(row)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              type="danger"
-              link
-              icon="Delete"
-              @click="handleDelete(row)"
-            >
+            <el-button type="primary" link icon="Edit" @click="openDialog(row)"> 编辑 </el-button>
+            <el-button type="danger" link icon="Delete" @click="handleDelete(row)">
               删除
             </el-button>
           </template>
         </el-table-column>
       </el-table>
 
-      <!-- 分页 -->
       <div class="pagination">
         <el-pagination
-          v-model:current-page="page"
-          v-model:page-size="pageSize"
+          v-model:current-page="pagination.page"
+          v-model:page-size="pagination.pageSize"
           :total="total"
           :page-sizes="[5, 10, 20]"
           layout="total, sizes, prev, pager, next"
-          @change="fetchUsers"
+          @change="handlePageChange"
         />
       </div>
     </div>
 
-    <!-- 新增/编辑弹窗 -->
     <el-dialog
       v-model="dialogVisible"
       :title="isEdit ? '编辑用户' : '新增用户'"
       width="480px"
       @close="resetForm"
     >
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="80px"
-      >
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" placeholder="请输入用户名" />
         </el-form-item>
@@ -85,7 +62,7 @@
           <el-input v-model="form.email" placeholder="请输入邮箱" />
         </el-form-item>
         <el-form-item label="角色" prop="role">
-          <el-select v-model="form.role" placeholder="请选择角色" style="width:100%">
+          <el-select v-model="form.role" placeholder="请选择角色" style="width: 100%">
             <el-option label="管理员" value="管理员" />
             <el-option label="编辑" value="编辑" />
             <el-option label="普通用户" value="普通用户" />
@@ -101,66 +78,43 @@
 
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">
-          确定
-        </el-button>
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit"> 确定 </el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { FormInstance, FormRules } from 'element-plus'
-import {
-  getUserList,
-  createUser,
-  updateUser,
-  deleteUser,
-} from '@/api/user'
+import type { FormRules } from 'element-plus'
+import { getUserList, createUser, updateUser, deleteUser } from '@/api/user'
 import type { UserListItem } from '@/types/user'
+import { useTable } from '@/composables/useTable'
+import { useForm } from '@/composables/useForm'
 
-// 列表数据
-const loading = ref(false)
-const userList = ref<UserListItem[]>([])
-const total = ref(0)
-const page = ref(1)
-const pageSize = ref(10)
-const searchKeyword = ref('')
+// useTable 接管列表逻辑
+const { loading, list, total, pagination, searchParams, fetchData, search, handlePageChange } =
+  useTable<UserListItem, { keyword: string; page: number; pageSize: number }>({
+    fetchFn: getUserList,
+    defaultParams: { keyword: '' },
+  })
 
-async function fetchUsers() {
-  loading.value = true
-  try {
-    const res = await getUserList({
-      page: page.value,
-      pageSize: pageSize.value,
-      keyword: searchKeyword.value,
-    })
-    userList.value = res.list
-    total.value = res.total
-  } finally {
-    loading.value = false
-  }
-}
-
-function handleSearch() {
-  page.value = 1
-  fetchUsers()
-}
-
-// 弹窗
-const dialogVisible = ref(false)
-const submitLoading = ref(false)
-const isEdit = ref(false)
-const formRef = ref<FormInstance>()
-
-const form = reactive<Partial<UserListItem>>({
-  username: '',
-  email: '',
-  role: '',
-  status: 1,
-})
+// useForm 接管弹窗逻辑
+const { formRef, dialogVisible, submitLoading, isEdit, form, openDialog, resetForm, handleSubmit } =
+  useForm<Partial<UserListItem>>({
+    initialValues: { username: '', email: '', role: '', status: 1 },
+    onSubmit: async (data, isEdit, editId) => {
+      if (isEdit) {
+        await updateUser(editId, data)
+        ElMessage.success('编辑成功')
+      } else {
+        await createUser(data)
+        ElMessage.success('新增成功')
+      }
+      fetchData()
+    },
+  })
 
 const rules: FormRules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
@@ -171,65 +125,22 @@ const rules: FormRules = {
   role: [{ required: true, message: '请选择角色', trigger: 'change' }],
 }
 
-let editId = -1
-
-function openDialog(row?: UserListItem) {
-  if (row) {
-    // 编辑：把当前行数据填入表单
-    isEdit.value = true
-    editId = row.id
-    Object.assign(form, row)
-  } else {
-    // 新增：重置表单
-    isEdit.value = false
-    editId = -1
-    resetForm()
-  }
-  dialogVisible.value = true
-}
-
-function resetForm() {
-  formRef.value?.resetFields()
-  Object.assign(form, { username: '', email: '', role: '', status: 1 })
-}
-
-async function handleSubmit() {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return
-
-  submitLoading.value = true
-  try {
-    if (isEdit.value) {
-      await updateUser(editId, form)
-      ElMessage.success('编辑成功')
-    } else {
-      await createUser(form)
-      ElMessage.success('新增成功')
-    }
-    dialogVisible.value = false
-    fetchUsers()
-  } finally {
-    submitLoading.value = false
-  }
-}
-
 async function handleDelete(row: UserListItem) {
-  await ElMessageBox.confirm(
-    `确定要删除用户「${row.username}」吗？`,
-    '警告',
-    { type: 'warning', confirmButtonText: '确定删除', cancelButtonText: '取消' }
-  )
+  await ElMessageBox.confirm(`确定要删除用户「${row.username}」吗？`, '警告', {
+    type: 'warning',
+    confirmButtonText: '确定删除',
+    cancelButtonText: '取消',
+  })
   await deleteUser(row.id)
   ElMessage.success('删除成功')
-  fetchUsers()
+  fetchData()
 }
 
-onMounted(fetchUsers)
+onMounted(fetchData)
 </script>
 
 <style scoped>
-.user-page,
-.role-page {
+.user-page {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -250,6 +161,7 @@ onMounted(fetchUsers)
   padding: 20px;
   border-radius: 8px;
   border: 1px solid #2a2d3e;
+  position: relative;
 }
 
 .pagination {

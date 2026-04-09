@@ -51,23 +51,23 @@ body {
   border: 1px solid #2a2d3e;
 }
 
-.el-input__wrapper {
-  background: #141624 !important;
-  box-shadow: 0 0 0 1px #2a2d3e inset !important;
+.el-dialog .el-input__wrapper {
+  background: #ffffff !important;
+  box-shadow: 0 0 0 1px #dcdfe6 inset !important;
 }
 
-.el-input__inner {
-  color: #c8ccd8 !important;
+.el-dialog .el-input__inner {
+  color: #303133 !important;
 }
 
-.el-select .el-input__wrapper {
-  background: #141624 !important;
+.el-dialog .el-select .el-input__wrapper {
+  background: #ffffff !important;
 }
 
-.el-textarea__inner {
-  background: #141624 !important;
-  color: #c8ccd8 !important;
-  box-shadow: 0 0 0 1px #2a2d3e inset !important;
+.el-dialog .el-textarea__inner {
+  background: #ffffff !important;
+  color: #303133 !important;
+  box-shadow: 0 0 0 1px #dcdfe6 inset !important;
 }
 
 .el-form-item__label {
@@ -239,4 +239,58 @@ body {
 
 .el-select__selected-item {
   color: #c8ccd8 !important;
+}
+
+.custom-loading-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 17, 23, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: inherit;
+}
+
+.custom-loading-spinner svg {
+  width: 36px;
+  height: 36px;
+  animation: rotate 1.5s linear infinite;
+}
+
+.custom-loading-spinner circle {
+  stroke-dasharray: 90, 150;
+  stroke-dashoffset: 0;
+  animation: dash 1.5s ease-in-out infinite;
+  stroke-linecap: round;
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35px;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124px;
+  }
+}
+
+.el-dialog .el-select__wrapper {
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 1px #dcdfe6 inset !important;
+}
+
+.el-dialog .el-select__selected-item {
+  color: #303133 !important;
 }
