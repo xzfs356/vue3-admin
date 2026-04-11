@@ -2,18 +2,18 @@ import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
 // 静态路由（不需要权限，任何人都能访问）
-export const constantRoutes:RouteRecordRaw[] = [
+export const constantRoutes: RouteRecordRaw[] = [
   {
     path: '/login',
-    name:'login',
+    name: 'login',
     component: () => import('@/views/login/index.vue'),
-    meta: { title:'登录',hidden:true}
+    meta: { title: '登录', hidden: true }
   },
-   {
+  {
     path: '/404',
-    name:'404',
+    name: '404',
     component: () => import('@/views/404.vue'),
-    meta: { title:'404',hidden:true}
+    meta: { title: '404', hidden: true }
   }
 ]
 
@@ -47,17 +47,29 @@ export const asyncRoutes: RouteRecordRaw[] = [
   {
     path: '/role',
     component: () => import('@/layout/index.vue'),
-    children:[{
-      path:'',
-      name:'Role',
-      component:() => import('@/views/role/index.vue'),
-      meta:{title:'角色管理',icon:'Lock',roles:['admin']}
+    children: [{
+      path: '',
+      name: 'Role',
+      component: () => import('@/views/role/index.vue'),
+      meta: { title: '角色管理', icon: 'Lock', roles: ['admin'] }
     }]
   },
   {
     path: '/:pathMatch(.*)*',
     redirect: '/404',
     meta: { hidden: true },
+  },
+  {
+    path: '/demo',
+    component: () => import('@/layout/index.vue'),
+    children: [
+      {
+        path: '',
+        name: 'Demo',
+        component: () => import('@/views/demo/dynamic-form.vue'),
+        meta: { title: '动态表单', icon: 'Document', roles: ['admin'] },
+      },
+    ],
   },
 ]
 

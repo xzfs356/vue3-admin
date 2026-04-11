@@ -9,26 +9,52 @@
         prefix-icon="Search"
         @change="search"
       />
-      <el-button type="primary" icon="Plus" @click="openDialog()"> 新增用户 </el-button>
+      <div style="display: flex; gap: 8px">
+        <!-- 列配置按钮 -->
+        <ColumnSetting :columns="columns" @reset="resetColumns" />
+        <el-button type="primary" icon="Plus" @click="openDialog()">
+          新增用户
+        </el-button>
+      </div>
     </div>
 
     <div class="table-card" v-loading="loading">
-      <el-table :data="list" stripe>
-        <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="username" label="用户名" />
-        <el-table-column prop="email" label="邮箱" />
-        <el-table-column prop="role" label="角色" />
-        <el-table-column label="状态" width="80">
+     <el-table 
+      :data="list" 
+      stripe
+      :key="visibleColumns.map(c => c.prop).join(',')"
+    >
+        <!-- 根据 visibleColumns 动态渲染列 -->
+        <template v-for="col in visibleColumns" :key="col.prop">
+          <!-- 状态列特殊处理 -->
+          <el-table-column
+            v-if="col.prop === 'status'"
+            :label="col.label"
+            :width="col.width"
+          >
+            <template #default="{ row }">
+              <el-tag :type="row.status === 1 ? 'success' : 'danger'">
+                {{ row.status === 1 ? '启用' : '禁用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+
+          <!-- 普通列 -->
+          <el-table-column
+            v-else
+            :prop="col.prop"
+            :label="col.label"
+            :width="col.width"
+            :sortable="col.sortable"
+          />
+        </template>
+
+        <!-- 操作列固定在右边 -->
+        <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-              {{ row.status === 1 ? '启用' : '禁用' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column label="操作" width="160">
-          <template #default="{ row }">
-            <el-button type="primary" link icon="Edit" @click="openDialog(row)"> 编辑 </el-button>
+            <el-button type="primary" link icon="Edit" @click="openDialog(row)">
+              编辑
+            </el-button>
             <el-button type="danger" link icon="Delete" @click="handleDelete(row)">
               删除
             </el-button>
@@ -54,31 +80,17 @@
       width="480px"
       @close="resetForm"
     >
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" placeholder="请输入用户名" />
-        </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="form.email" placeholder="请输入邮箱" />
-        </el-form-item>
-        <el-form-item label="角色" prop="role">
-          <el-select v-model="form.role" placeholder="请选择角色" style="width: 100%">
-            <el-option label="管理员" value="管理员" />
-            <el-option label="编辑" value="编辑" />
-            <el-option label="普通用户" value="普通用户" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="form.status">
-            <el-radio :value="1">启用</el-radio>
-            <el-radio :value="0">禁用</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
+      <DynamicForm
+        ref="formRef"
+        v-model="form"
+        :config="userFormConfig"
+      />
 
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitLoading" @click="handleSubmit"> 确定 </el-button>
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">
+          确定
+        </el-button>
       </template>
     </el-dialog>
   </div>
@@ -87,20 +99,76 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { FormRules } from 'element-plus'
 import { getUserList, createUser, updateUser, deleteUser } from '@/api/user'
 import type { UserListItem } from '@/types/user'
 import { useTable } from '@/composables/useTable'
 import { useForm } from '@/composables/useForm'
+import { useTableColumns } from '@/composables/useTableColumns'
+import ColumnSetting from '@/components/ColumnSetting.vue'
+import DynamicForm from '@/components/DynamicForm.vue'
+import type { FormConfig } from '@/types/form'
 
-// useTable 接管列表逻辑
+const userFormConfig: FormConfig = {
+  labelWidth: '80px',
+  fields: [
+    {
+      field: 'username',
+      label: '用户名',
+      type: 'input',
+      placeholder: '请输入用户名',
+      rules: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+    },
+    {
+      field: 'email',
+      label: '邮箱',
+      type: 'input',
+      placeholder: '请输入邮箱',
+      rules: [
+        { required: true, message: '请输入邮箱', trigger: 'blur' },
+        { type: 'email', message: '邮箱格式不正确', trigger: 'blur' },
+      ],
+    },
+    {
+      field: 'role',
+      label: '角色',
+      type: 'select',
+      placeholder: '请选择角色',
+      options: [
+        { label: '管理员', value: '管理员' },
+        { label: '编辑', value: '编辑' },
+        { label: '普通用户', value: '普通用户' },
+      ],
+      rules: [{ required: true, message: '请选择角色', trigger: 'change' }],
+    },
+    {
+      field: 'status',
+      label: '状态',
+      type: 'radio',
+      options: [
+        { label: '启用', value: 1 },
+        { label: '禁用', value: 0 },
+      ],
+    },
+  ],
+}
+// 列配置
+const { columns, visibleColumns, resetColumns } = useTableColumns('user', [
+  { prop: 'id', label: 'ID', width: 60, visible: true },
+  { prop: 'username', label: '用户名', visible: true },
+  { prop: 'email', label: '邮箱', visible: true },
+  { prop: 'role', label: '角色', visible: true },
+  { prop: 'status', label: '状态', width: 80, visible: true },
+  { prop: 'createTime', label: '创建时间', width: 180, visible: true, sortable: true },
+])
+
+// useTable
 const { loading, list, total, pagination, searchParams, fetchData, search, handlePageChange } =
   useTable<UserListItem, { keyword: string; page: number; pageSize: number }>({
     fetchFn: getUserList,
     defaultParams: { keyword: '' },
   })
 
-// useForm 接管弹窗逻辑
+// useForm
 const { formRef, dialogVisible, submitLoading, isEdit, form, openDialog, resetForm, handleSubmit } =
   useForm<Partial<UserListItem>>({
     initialValues: { username: '', email: '', role: '', status: 1 },
@@ -116,21 +184,13 @@ const { formRef, dialogVisible, submitLoading, isEdit, form, openDialog, resetFo
     },
   })
 
-const rules: FormRules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { type: 'email', message: '邮箱格式不正确', trigger: 'blur' },
-  ],
-  role: [{ required: true, message: '请选择角色', trigger: 'change' }],
-}
 
 async function handleDelete(row: UserListItem) {
-  await ElMessageBox.confirm(`确定要删除用户「${row.username}」吗？`, '警告', {
-    type: 'warning',
-    confirmButtonText: '确定删除',
-    cancelButtonText: '取消',
-  })
+  await ElMessageBox.confirm(
+    `确定要删除用户「${row.username}」吗？`,
+    '警告',
+    { type: 'warning', confirmButtonText: '确定删除', cancelButtonText: '取消' }
+  )
   await deleteUser(row.id)
   ElMessage.success('删除成功')
   fetchData()
