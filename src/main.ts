@@ -9,6 +9,8 @@ import App from './App.vue'
 import router from './router'
 import '@/router/guard'
 import loadingDirective from '@/directives/loading'
+import VueVirtualScroller from 'vue-virtual-scroller'
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 
 const app = createApp(App)
 
@@ -20,6 +22,7 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 app.use(createPinia())
 app.use(router)
 app.use(ElementPlus, { locale: zhCn })
+app.use(VueVirtualScroller)
 
 app.directive('loading', loadingDirective)
 app.mount('#app')

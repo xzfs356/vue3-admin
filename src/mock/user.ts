@@ -60,10 +60,38 @@ export default [
         message: 'success',
         data: {
           list: [
-            { id: 1, username: 'admin', email: 'admin@test.com', status: 1, role: '管理员', createTime: '2024-01-01 10:00:00' },
-            { id: 2, username: 'editor', email: 'editor@test.com', status: 1, role: '编辑', createTime: '2024-01-02 10:00:00' },
-            { id: 3, username: 'zhangsan', email: 'zs@test.com', status: 0, role: '普通用户', createTime: '2024-01-03 10:00:00' },
-            { id: 4, username: 'lisi', email: 'ls@test.com', status: 1, role: '普通用户', createTime: '2024-01-04 10:00:00' },
+            {
+              id: 1,
+              username: 'admin',
+              email: 'admin@test.com',
+              status: 1,
+              role: '管理员',
+              createTime: '2024-01-01 10:00:00',
+            },
+            {
+              id: 2,
+              username: 'editor',
+              email: 'editor@test.com',
+              status: 1,
+              role: '编辑',
+              createTime: '2024-01-02 10:00:00',
+            },
+            {
+              id: 3,
+              username: 'zhangsan',
+              email: 'zs@test.com',
+              status: 0,
+              role: '普通用户',
+              createTime: '2024-01-03 10:00:00',
+            },
+            {
+              id: 4,
+              username: 'lisi',
+              email: 'ls@test.com',
+              status: 1,
+              role: '普通用户',
+              createTime: '2024-01-04 10:00:00',
+            },
           ],
           total: 4,
           page: 1,
@@ -105,4 +133,26 @@ export default [
       data: null,
     }),
   },
+  // 加在 export default 数组里
+  {
+    url: '/api/users/all',
+    method: 'get',
+    response: () => ({
+      code: 200,
+      message: 'success',
+      data: generateUsers(10000),
+    }),
+  },
 ] as MockMethod[]
+
+// 生成10000条假数据
+function generateUsers(count: number) {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i + 1,
+    username: `user_${i + 1}`,
+    email: `user${i + 1}@test.com`,
+    status: i % 3 === 0 ? 0 : 1,
+    role: ['管理员', '编辑', '普通用户'][i % 3],
+    createTime: '2024-01-01 10:00:00',
+  }))
+}

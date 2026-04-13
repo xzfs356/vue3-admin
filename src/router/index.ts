@@ -7,14 +7,14 @@ export const constantRoutes: RouteRecordRaw[] = [
     path: '/login',
     name: 'login',
     component: () => import('@/views/login/index.vue'),
-    meta: { title: '登录', hidden: true }
+    meta: { title: '登录', hidden: true },
   },
   {
     path: '/404',
     name: '404',
     component: () => import('@/views/404.vue'),
-    meta: { title: '404', hidden: true }
-  }
+    meta: { title: '404', hidden: true },
+  },
 ]
 
 // 动态路由（需要权限才能访问，后面权限管理会用到）
@@ -47,12 +47,14 @@ export const asyncRoutes: RouteRecordRaw[] = [
   {
     path: '/role',
     component: () => import('@/layout/index.vue'),
-    children: [{
-      path: '',
-      name: 'Role',
-      component: () => import('@/views/role/index.vue'),
-      meta: { title: '角色管理', icon: 'Lock', roles: ['admin'] }
-    }]
+    children: [
+      {
+        path: '',
+        name: 'Role',
+        component: () => import('@/views/role/index.vue'),
+        meta: { title: '角色管理', icon: 'Lock', roles: ['admin'] },
+      },
+    ],
   },
   {
     path: '/:pathMatch(.*)*',
@@ -71,6 +73,18 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: '/demo-virtual',
+    component: () => import('@/layout/index.vue'),
+    children: [
+      {
+        path: '',
+        name: 'VirtualScroll',
+        component: () => import('@/views/demo/virtual-scroll.vue'),
+        meta: { title: '虚拟滚动', icon: 'List', roles: ['admin'] },
+      },
+    ],
+  },
 ]
 
 const router = createRouter({
@@ -81,12 +95,11 @@ const router = createRouter({
 
 // 新增：重置路由方法（退出登录时用）
 export function resetRouter() {
-  asyncRoutes.forEach(route => {
+  asyncRoutes.forEach((route) => {
     if (route.name && router.hasRoute(route.name)) {
       router.removeRoute(route.name)
     }
   })
 }
-
 
 export default router
