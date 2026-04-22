@@ -97,6 +97,18 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: '/product',
+    component: () => import('@/layout/index.vue'),
+    children: [
+      {
+        path: '',
+        name: 'Product',
+        component: () => import('@/views/product/index.vue'),
+        meta: { title: '商品管理', icon: 'Goods', roles: ['admin'] },
+      },
+    ],
+  },
 ]
 
 const router = createRouter({
