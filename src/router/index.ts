@@ -85,6 +85,18 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: '/demo-tracker',
+    component: () => import('@/layout/index.vue'),
+    children: [
+      {
+        path: '',
+        name: 'Tracker',
+        component: () => import('@/views/demo/tracker.vue'),
+        meta: { title: '监控SDK', icon: 'Monitor', roles: ['admin'] },
+      },
+    ],
+  },
 ]
 
 const router = createRouter({

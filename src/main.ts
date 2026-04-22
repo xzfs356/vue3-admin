@@ -11,6 +11,7 @@ import '@/router/guard'
 import loadingDirective from '@/directives/loading'
 import VueVirtualScroller from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
+import { initTracker } from '@/utils/tracker'
 
 const app = createApp(App)
 
@@ -23,6 +24,10 @@ app.use(createPinia())
 app.use(router)
 app.use(ElementPlus, { locale: zhCn })
 app.use(VueVirtualScroller)
+initTracker({
+  appId: 'vue3-admin',
+  // reportUrl: 'https://your-api.com/track', // 有真实后端时填这里
+})
 
 app.directive('loading', loadingDirective)
 app.mount('#app')
