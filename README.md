@@ -85,7 +85,7 @@ src/
 
 ## 在线预览
 
-[https://vue3-admin-eight.vercel.app](https://vue3-admin-eight.vercel.app)（可能需要代理访问）
+[https://vue3-admin-eight.vercel.app](https://vue3-admin-eight.vercel.app)（已失效，待重新部署后更新地址）
 
 ## 开发总结
 
